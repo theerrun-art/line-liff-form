@@ -21,8 +21,8 @@
 
             <div id="jobFields" class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">จำนวนงาน (ชิ้น)</label>
-                    <input type="number" id="qtyInput" placeholder="ระบุจำนวนงาน" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 p-2 border">
+                    <label class="block text-sm font-medium text-gray-700">ยอดเงินรวม (บาท)</label>
+                    <input type="number" id="qtyInput" placeholder="ระบุยอดเงิน" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 p-2 border">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">ชื่อร้านค้า</label>
@@ -45,13 +45,12 @@
 
     <script>
         // --- ส่วนตั้งค่า ---
-        // 🚨 อย่าลืมแก้ลิงก์ Webhook ให้เป็นอันปัจจุบันของคุณนะครับ
+        // 🚨 อย่าลืมเช็คลิงก์ Webhook ว่ายังเป็นปัจจุบันอยู่ไหมนะครับ
         const N8N_WEBHOOK_URL = 'https://114021417720.ngrok-free.app/webhook-test/line-branch-1'; 
         const LIFF_ID = '2008942602-XZnTQc1s'; 
 
-        // ตัวแปรตรวจสอบโหมด
         const urlParams = new URLSearchParams(window.location.search);
-        const mode = urlParams.get('mode'); // อ่านค่า ?mode=... จากลิงก์
+        const mode = urlParams.get('mode'); 
 
         async function main() {
             await liff.init({ liffId: LIFF_ID });
@@ -71,31 +70,27 @@
             const amountInput = document.getElementById('amountInput');
 
             if (mode === 'transfer') {
-                // โหมด: เงินโอน
+                // โหมด: เงินโอน (สีเขียว)
                 title.innerText = '💸 บันทึกเงินโอน';
                 title.className = "text-xl font-bold mb-4 text-center text-green-700";
                 btn.className = "w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded transition duration-300";
                 
-                // สลับการแสดงผล
                 jobFields.classList.add('hidden');
                 transferFields.classList.remove('hidden');
                 
-                // ตั้งค่า Required (บังคับกรอกเฉพาะช่องที่โชว์)
                 amountInput.required = true;
                 qtyInput.required = false;
                 shopInput.required = false;
 
             } else {
-                // โหมด: งาน (ค่าเริ่มต้น)
-                title.innerText = '📝 บันทึกส่งงาน';
+                // โหมดปกติ: เปลี่ยนหัวข้อตรงนี้ (สีฟ้า)
+                title.innerText = '📝 สร้างสลิปสินค้า';
                 title.className = "text-xl font-bold mb-4 text-center text-blue-700";
                 btn.className = "w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300";
 
-                // สลับการแสดงผล
                 jobFields.classList.remove('hidden');
                 transferFields.classList.add('hidden');
 
-                // ตั้งค่า Required
                 amountInput.required = false;
                 qtyInput.required = true;
                 shopInput.required = true;
@@ -108,20 +103,20 @@
             submitBtn.disabled = true;
             submitBtn.innerText = 'กำลังส่ง...';
 
-            // เตรียมข้อมูลส่งออก
             let formData = {
                 date: document.getElementById('dateInput').value,
                 userId: liff.getContext()?.userId,
-                // ส่งโหมดไปด้วย n8n จะได้รู้ว่าคือรายการอะไร
                 formType: mode === 'transfer' ? 'transfer' : 'job' 
             };
 
             if (mode === 'transfer') {
-                formData.amount = document.getElementById('amountInput').value; // ยอดเงิน
-                formData.item = 'เงินโอนเข้าบัญชี'; // ตั้งชื่อรายการอัตโนมัติ
+                formData.amount = document.getElementById('amountInput').value; 
+                formData.item = 'เงินโอนเข้าบัญชี'; 
             } else {
-                formData.quantity = document.getElementById('qtyInput').value; // จำนวนงาน
-                formData.shop = document.getElementById('shopInput').value;    // ชื่อร้าน
+                // ตรงนี้สำคัญ: เรายังส่งค่าไปในชื่อ 'quantity' เหมือนเดิม
+                // แม้หน้าจอจะโชว์ว่า 'ยอดเงินรวม' ก็ตาม
+                formData.quantity = document.getElementById('qtyInput').value; 
+                formData.shop = document.getElementById('shopInput').value;    
             }
 
             try {
