@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>บันทึกงาน</title>
+    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-4">
+
+    <div class="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl p-6">
+        <h2 class="text-xl font-bold mb-4 text-center text-gray-700">📝 แบบฟอร์มส่งงาน</h2>
+        
+        <form id="jobForm" class="space-y-4">
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700">วันที่</label>
+                <input type="date" id="dateInput" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 p-2 border">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700">จำนวนงาน</label>
+                <input type="number" id="qtyInput" placeholder="ระบุตัวเลข" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 p-2 border">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700">ชื่อร้านค้า</label>
+                <input type="text" id="shopInput" placeholder="เช่น ร้าน A, ร้าน B" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 p-2 border">
+            </div>
+
+            <button type="submit" id="submitBtn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded transition duration-300">
+                ยืนยันการส่งข้อมูล
+            </button>
+        </form>
+    </div>
+
+    <script>
+        // --- ส่วนตั้งค่า ---
+        const N8N_WEBHOOK_URL = 'https://f77cbc114b8e.ngrok-free.app/webhook/line-branch-1'; // ใส่ URL จากขั้นตอนที่ 1 ตรงนี้
+        const LIFF_ID = '2008942602-XZnTQc1s'; // เดี๋ยวเราจะได้ค่านี้จากขั้นตอนที่ 3
+
+        async function main() {
+            // เริ่มต้น LIFF
+            await liff.init({ liffId: LIFF_ID });
+            
+            // ตั้งค่า Default วันที่ให้เป็นวันนี้
+            document.getElementById('dateInput').valueAsDate = new Date();
+
+            if (!liff.isLoggedIn()) {
+                liff.login();
+            }
+        }
+
+        document.getElementById('jobForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerText = 'กำลังส่ง...';
+
+            // ดึงข้อมูล
+            const formData = {
+                date: document.getElementById('dateInput').value,
+                quantity: document.getElementById('qtyInput').value,
+                shop: document.getElementById('shopInput').value,
+                userId: liff.getContext()?.userId // ส่ง User ID ไปด้วยเพื่อให้รู้ว่าใครส่ง
+            };
+
+            try {
+                // ยิงไป n8n
+                await fetch(N8N_WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                // แจ้งเตือนและปิดหน้าต่าง
+                alert('ส่งข้อมูลเรียบร้อยแล้ว!');
+                liff.closeWindow(); 
+
+            } catch (err) {
+                alert('เกิดข้อผิดพลาด: ' + err.message);
+                submitBtn.disabled = false;
+                submitBtn.innerText = 'ยืนยันการส่งข้อมูล';
+            }
+        });
+
+        main();
+    </script>
+</body>
+</html>
