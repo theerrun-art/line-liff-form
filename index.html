@@ -3,80 +3,144 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>บันทึกงาน</title>
+    <title>บันทึกข้อมูล</title>
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 p-4">
 
     <div class="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl p-6">
-        <h2 class="text-xl font-bold mb-4 text-center text-gray-700">📝 แบบฟอร์มส่งงาน</h2>
+        <h2 id="formTitle" class="text-xl font-bold mb-4 text-center text-gray-700">📝 กำลังโหลด...</h2>
         
-        <form id="jobForm" class="space-y-4">
+        <form id="mainForm" class="space-y-4">
+            
             <div>
                 <label class="block text-sm font-medium text-gray-700">วันที่</label>
                 <input type="date" id="dateInput" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 p-2 border">
             </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700">จำนวนงาน</label>
-                <input type="number" id="qtyInput" placeholder="ระบุตัวเลข" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 p-2 border">
+
+            <div id="jobFields" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">จำนวนงาน (ชิ้น)</label>
+                    <input type="number" id="qtyInput" placeholder="ระบุจำนวนงาน" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 p-2 border">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">ชื่อร้านค้า</label>
+                    <input type="text" id="shopInput" placeholder="เช่น ร้านเจ๊โบว์" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 p-2 border">
+                </div>
             </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700">ชื่อร้านค้า</label>
-                <input type="text" id="shopInput" placeholder="เช่น ร้าน A, ร้าน B" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 p-2 border">
+
+            <div id="transferFields" class="hidden space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">ยอดเงินโอน (บาท)</label>
+                    <input type="number" id="amountInput" placeholder="ระบุยอดเงิน" class="mt-1 block w-full rounded-md border-green-300 shadow-sm focus:border-green-300 focus:ring focus:ring-green-200 focus:ring-opacity-50 p-2 border">
+                </div>
             </div>
-            <button type="submit" id="submitBtn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded transition duration-300">
-                ยืนยันการส่งข้อมูล
+
+            <button type="submit" id="submitBtn" class="w-full bg-gray-500 text-white font-bold py-2 px-4 rounded transition duration-300">
+                ยืนยันข้อมูล
             </button>
         </form>
     </div>
 
     <script>
         // --- ส่วนตั้งค่า ---
-        // ตรวจสอบลิงก์ ngrok ว่ายังเป็นเลขนี้อยู่ไหมนะครับ (ถ้าปิดคอมเลขจะเปลี่ยน)
+        // 🚨 อย่าลืมแก้ลิงก์ Webhook ให้เป็นอันปัจจุบันของคุณนะครับ
         const N8N_WEBHOOK_URL = 'https://114021417720.ngrok-free.app/webhook-test/line-branch-1'; 
-        const LIFF_ID = '2008942602-XZnTQc1s';
+        const LIFF_ID = '2008942602-XZnTQc1s'; 
+
+        // ตัวแปรตรวจสอบโหมด
+        const urlParams = new URLSearchParams(window.location.search);
+        const mode = urlParams.get('mode'); // อ่านค่า ?mode=... จากลิงก์
 
         async function main() {
             await liff.init({ liffId: LIFF_ID });
             document.getElementById('dateInput').valueAsDate = new Date();
+            
             if (!liff.isLoggedIn()) {
                 liff.login();
             }
+
+            // --- จัดการหน้าตาตามโหมด ---
+            const title = document.getElementById('formTitle');
+            const btn = document.getElementById('submitBtn');
+            const jobFields = document.getElementById('jobFields');
+            const transferFields = document.getElementById('transferFields');
+            const qtyInput = document.getElementById('qtyInput');
+            const shopInput = document.getElementById('shopInput');
+            const amountInput = document.getElementById('amountInput');
+
+            if (mode === 'transfer') {
+                // โหมด: เงินโอน
+                title.innerText = '💸 บันทึกเงินโอน';
+                title.className = "text-xl font-bold mb-4 text-center text-green-700";
+                btn.className = "w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded transition duration-300";
+                
+                // สลับการแสดงผล
+                jobFields.classList.add('hidden');
+                transferFields.classList.remove('hidden');
+                
+                // ตั้งค่า Required (บังคับกรอกเฉพาะช่องที่โชว์)
+                amountInput.required = true;
+                qtyInput.required = false;
+                shopInput.required = false;
+
+            } else {
+                // โหมด: งาน (ค่าเริ่มต้น)
+                title.innerText = '📝 บันทึกส่งงาน';
+                title.className = "text-xl font-bold mb-4 text-center text-blue-700";
+                btn.className = "w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300";
+
+                // สลับการแสดงผล
+                jobFields.classList.remove('hidden');
+                transferFields.classList.add('hidden');
+
+                // ตั้งค่า Required
+                amountInput.required = false;
+                qtyInput.required = true;
+                shopInput.required = true;
+            }
         }
 
-        document.getElementById('jobForm').addEventListener('submit', async (e) => {
+        document.getElementById('mainForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const submitBtn = document.getElementById('submitBtn');
             submitBtn.disabled = true;
             submitBtn.innerText = 'กำลังส่ง...';
 
-            const formData = {
+            // เตรียมข้อมูลส่งออก
+            let formData = {
                 date: document.getElementById('dateInput').value,
-                quantity: document.getElementById('qtyInput').value,
-                shop: document.getElementById('shopInput').value,
-                userId: liff.getContext()?.userId
+                userId: liff.getContext()?.userId,
+                // ส่งโหมดไปด้วย n8n จะได้รู้ว่าคือรายการอะไร
+                formType: mode === 'transfer' ? 'transfer' : 'job' 
             };
 
+            if (mode === 'transfer') {
+                formData.amount = document.getElementById('amountInput').value; // ยอดเงิน
+                formData.item = 'เงินโอนเข้าบัญชี'; // ตั้งชื่อรายการอัตโนมัติ
+            } else {
+                formData.quantity = document.getElementById('qtyInput').value; // จำนวนงาน
+                formData.shop = document.getElementById('shopInput').value;    // ชื่อร้าน
+            }
+
             try {
-                // --- จุดที่แก้ไข ---
                 await fetch(N8N_WEBHOOK_URL, {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
-                        'ngrok-skip-browser-warning': 'true' // ใส่บรรทัดนี้เพื่อให้ทะลุ ngrok ได้
+                        'ngrok-skip-browser-warning': 'true'
                     },
                     body: JSON.stringify(formData)
                 });
-                // ------------------
 
-                alert('ส่งข้อมูลเรียบร้อยแล้ว!');
+                alert('✅ บันทึกเรียบร้อย!');
                 liff.closeWindow(); 
 
             } catch (err) {
                 alert('เกิดข้อผิดพลาด: ' + err.message);
                 submitBtn.disabled = false;
-                submitBtn.innerText = 'ยืนยันการส่งข้อมูล';
+                submitBtn.innerText = 'ลองใหม่';
             }
         });
 
@@ -84,4 +148,3 @@
     </script>
 </body>
 </html>
-
