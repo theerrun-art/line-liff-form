@@ -6,46 +6,84 @@
     <title>บันทึกข้อมูล</title>
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Mali:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* ตั้งค่าฟอนต์ทั้งหน้าเว็บ */
+        body {
+            font-family: 'Mali', cursive;
+        }
+        /* สร้างลายจุดพื้นหลังน่ารักๆ */
+        .cute-pattern {
+            background-color: #fff1f2; /* สีพื้นชมพูอ่อน */
+            background-image: radial-gradient(#fbcfe8 2px, transparent 2px);
+            background-size: 20px 20px;
+        }
+        /* เอฟเฟกต์กดปุ่มแล้วยุบลงนิดนึง */
+        .btn-bounce:active {
+            transform: scale(0.95);
+        }
+    </style>
 </head>
-<body class="bg-gray-100 p-4">
+<body class="cute-pattern min-h-screen flex items-center justify-center p-4">
 
-    <div class="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl p-6">
-        <h2 id="formTitle" class="text-xl font-bold mb-4 text-center text-gray-700">📝 กำลังโหลด...</h2>
+    <div class="w-full max-w-md bg-white rounded-[2rem] shadow-xl overflow-hidden border-4 border-white relative">
         
-        <form id="mainForm" class="space-y-4">
+        <div id="headerBg" class="h-24 bg-blue-200 flex items-center justify-center relative overflow-hidden">
+            <div class="absolute top-[-20px] left-[-20px] w-16 h-16 bg-white opacity-20 rounded-full"></div>
+            <div class="absolute bottom-[-10px] right-[-10px] w-20 h-20 bg-white opacity-20 rounded-full"></div>
             
-            <div>
-                <label class="block text-sm font-medium text-gray-700">วันที่</label>
-                <input type="date" id="dateInput" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 p-2 border">
-            </div>
+            <h2 id="formTitle" class="text-2xl font-bold text-white drop-shadow-md relative z-10 mt-2">
+                📝 กำลังโหลด...
+            </h2>
+        </div>
 
-            <div id="jobFields" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">ยอดเงินรวม (บาท)</label>
-                    <input type="number" id="qtyInput" placeholder="ระบุยอดเงิน" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 p-2 border">
+        <div class="p-6 pt-8">
+            <form id="mainForm" class="space-y-5">
+                
+                <div class="relative">
+                    <label class="block text-gray-600 font-bold mb-1 ml-1">📅 วันที่</label>
+                    <input type="date" id="dateInput" required 
+                        class="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl p-3 focus:outline-none focus:border-pink-300 focus:ring-2 focus:ring-pink-100 transition-all text-gray-700">
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">ชื่อร้านค้า</label>
-                    <input type="text" id="shopInput" placeholder="เช่น ร้านเจ๊โบว์" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 p-2 border">
-                </div>
-            </div>
 
-            <div id="transferFields" class="hidden space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">ยอดเงินโอน (บาท)</label>
-                    <input type="number" id="amountInput" placeholder="ระบุยอดเงิน" class="mt-1 block w-full rounded-md border-green-300 shadow-sm focus:border-green-300 focus:ring focus:ring-green-200 focus:ring-opacity-50 p-2 border">
+                <div id="jobFields" class="space-y-5">
+                    <div>
+                        <label class="block text-gray-600 font-bold mb-1 ml-1">💰 ยอดเงินรวม (บาท)</label>
+                        <input type="number" id="qtyInput" placeholder="ระบุยอดเงิน (เช่น 1500)" 
+                            class="w-full bg-blue-50 border-2 border-blue-100 rounded-2xl p-3 focus:outline-none focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition-all text-gray-700 placeholder-blue-300">
+                    </div>
+                    <div>
+                        <label class="block text-gray-600 font-bold mb-1 ml-1">🏪 ชื่อร้านค้า</label>
+                        <input type="text" id="shopInput" placeholder="เช่น ร้านเจ๊โบว์" 
+                            class="w-full bg-pink-50 border-2 border-pink-100 rounded-2xl p-3 focus:outline-none focus:border-pink-300 focus:ring-2 focus:ring-pink-100 transition-all text-gray-700 placeholder-pink-300">
+                    </div>
                 </div>
-            </div>
 
-            <button type="submit" id="submitBtn" class="w-full bg-gray-500 text-white font-bold py-2 px-4 rounded transition duration-300">
-                ยืนยันข้อมูล
-            </button>
-        </form>
+                <div id="transferFields" class="hidden space-y-5">
+                    <div>
+                        <label class="block text-gray-600 font-bold mb-1 ml-1">💵 ยอดเงินโอน (บาท)</label>
+                        <input type="number" id="amountInput" placeholder="ระบุยอดเงินโอน" 
+                            class="w-full bg-green-50 border-2 border-green-100 rounded-2xl p-3 focus:outline-none focus:border-green-300 focus:ring-2 focus:ring-green-100 transition-all text-gray-700 placeholder-green-300">
+                    </div>
+                </div>
+
+                <button type="submit" id="submitBtn" 
+                    class="w-full btn-bounce bg-gray-400 text-white font-bold text-lg py-3 px-4 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 mt-4 border-b-4 border-gray-500 active:border-b-0 active:translate-y-1">
+                    ยืนยันข้อมูล ✨
+                </button>
+            </form>
+        </div>
+        
+        <div class="text-center pb-4 text-xs text-gray-300 font-light">
+            Powered by n8n & LIFF
+        </div>
     </div>
 
     <script>
-        // --- ส่วนตั้งค่า ---
-        // 🚨 อย่าลืมเช็คลิงก์ Webhook ว่ายังเป็นปัจจุบันอยู่ไหมนะครับ
+        // --- ส่วนตั้งค่า (อย่าลืมเช็คลิงก์ Webhook นะครับ) ---
         const N8N_WEBHOOK_URL = 'https://114021417720.ngrok-free.app/webhook-test/line-branch-1'; 
         const LIFF_ID = '2008942602-XZnTQc1s'; 
 
@@ -60,7 +98,8 @@
                 liff.login();
             }
 
-            // --- จัดการหน้าตาตามโหมด ---
+            // --- จัดการธีมและหน้าตา ---
+            const headerBg = document.getElementById('headerBg');
             const title = document.getElementById('formTitle');
             const btn = document.getElementById('submitBtn');
             const jobFields = document.getElementById('jobFields');
@@ -70,10 +109,10 @@
             const amountInput = document.getElementById('amountInput');
 
             if (mode === 'transfer') {
-                // โหมด: เงินโอน (สีเขียว)
+                // 💚 ธีมเงินโอน (เขียวมิ้นต์สดใส)
                 title.innerText = '💸 บันทึกเงินโอน';
-                title.className = "text-xl font-bold mb-4 text-center text-green-700";
-                btn.className = "w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded transition duration-300";
+                headerBg.className = "h-24 bg-gradient-to-r from-green-300 to-teal-300 flex items-center justify-center relative overflow-hidden";
+                btn.className = "w-full btn-bounce bg-gradient-to-r from-green-400 to-teal-400 text-white font-bold text-lg py-3 px-4 rounded-2xl shadow-green-200 hover:shadow-xl transition-all duration-300 border-b-4 border-green-600 active:border-b-0 active:translate-y-1";
                 
                 jobFields.classList.add('hidden');
                 transferFields.classList.remove('hidden');
@@ -83,10 +122,10 @@
                 shopInput.required = false;
 
             } else {
-                // โหมดปกติ: เปลี่ยนหัวข้อตรงนี้ (สีฟ้า)
-                title.innerText = '📝 สร้างสลิปสินค้า';
-                title.className = "text-xl font-bold mb-4 text-center text-blue-700";
-                btn.className = "w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300";
+                // 🩵 ธีมสลิปสินค้า (ฟ้าพาสเทล - ชมพู)
+                title.innerText = '🧾 สร้างสลิปสินค้า';
+                headerBg.className = "h-24 bg-gradient-to-r from-blue-300 to-pink-300 flex items-center justify-center relative overflow-hidden";
+                btn.className = "w-full btn-bounce bg-gradient-to-r from-blue-400 to-indigo-400 text-white font-bold text-lg py-3 px-4 rounded-2xl shadow-blue-200 hover:shadow-xl transition-all duration-300 border-b-4 border-blue-600 active:border-b-0 active:translate-y-1";
 
                 jobFields.classList.remove('hidden');
                 transferFields.classList.add('hidden');
@@ -101,7 +140,8 @@
             e.preventDefault();
             const submitBtn = document.getElementById('submitBtn');
             submitBtn.disabled = true;
-            submitBtn.innerText = 'กำลังส่ง...';
+            submitBtn.innerText = '🚀 กำลังส่งข้อมูล...';
+            submitBtn.classList.add('opacity-75');
 
             let formData = {
                 date: document.getElementById('dateInput').value,
@@ -113,8 +153,6 @@
                 formData.amount = document.getElementById('amountInput').value; 
                 formData.item = 'เงินโอนเข้าบัญชี'; 
             } else {
-                // ตรงนี้สำคัญ: เรายังส่งค่าไปในชื่อ 'quantity' เหมือนเดิม
-                // แม้หน้าจอจะโชว์ว่า 'ยอดเงินรวม' ก็ตาม
                 formData.quantity = document.getElementById('qtyInput').value; 
                 formData.shop = document.getElementById('shopInput').value;    
             }
@@ -129,13 +167,15 @@
                     body: JSON.stringify(formData)
                 });
 
-                alert('✅ บันทึกเรียบร้อย!');
+                // แจ้งเตือนแบบน่ารักๆ
+                alert('✅ บันทึกข้อมูลสำเร็จ! \nขอบคุณนะคะ ✨');
                 liff.closeWindow(); 
 
             } catch (err) {
-                alert('เกิดข้อผิดพลาด: ' + err.message);
+                alert('แย่จัง! เกิดข้อผิดพลาด: ' + err.message);
                 submitBtn.disabled = false;
-                submitBtn.innerText = 'ลองใหม่';
+                submitBtn.innerText = 'ลองใหม่อีกครั้ง 🔄';
+                submitBtn.classList.remove('opacity-75');
             }
         });
 
